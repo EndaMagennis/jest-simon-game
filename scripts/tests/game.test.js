@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-const { game, newGame, showScore, addTurn, lightsOn } = require("../game");
+const { game, newGame, showScore, addTurn, lightsOn, showTurns } = require("../game");
 
 beforeAll(() => {
     let fs = require("fs");
@@ -28,9 +28,13 @@ describe("Game object contains correct keys", ()=> {
     test("choices contains ids of each of the four buttons", () =>{
         expect(game.choices).toEqual(["button1", "button2", "button3", "button4"]);
     });
+    test("turnNmuber key exists", () => {
+        expect("turnNumber" in game).toBe(true);
+    })
 });
 
 describe("newGame works correctly", () => {
+    // settings before all tests, is affected by each test
     beforeAll(() => {
         game.score = 42;
         game.playerMoves = ['button1', 'button2', 'button3'];
@@ -50,23 +54,28 @@ describe("newGame works correctly", () => {
     });
     test("should display zero when new game starts", () => {
         expect(document.getElementById('score').innerText).toBe(0);
+    });
+    test("should reset turnNumber to 0", () => {
+        expect(game.turnNumber).toBe(0);
+    });
+    test("expect data-listener to be true", () => {
+        const elements = document.getElementsByClassName("circle");
+        for (let element of elements) {
+            expect(element.getAttribute("data-listener")).toEqual("true");
+        }
     })
 
-});
-
-describe("addTurn works correctly", () => {
-    beforeAll(() => {
-        game.currentTurn = 0;
-    })
 });
 
 describe("gameplay works correctly", () => {
+    // settings before each test, is affected by first test
     beforeEach(() => {
         game.score = 0;
         game.currentGame = [];
         game.playerMoves = [];
         addTurn();
     });
+    // reset settings after each test 
     afterEach(() => {
         game.score = 0;
         game.currentGame = [];
@@ -81,5 +90,9 @@ describe("gameplay works correctly", () => {
         lightsOn(game.currentGame[0]);
         expect(button.classList).toContain("light");
     })
+    test("showTurns should update game.turnNumber", () => {
+        game.turnNumber = 42;
+        showTurns();
+        expect(game.turnNumber).toBe(0);
+    })
 });
-
