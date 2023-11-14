@@ -4,25 +4,34 @@ let game = {
     playerMoves: [], // players move
     turnNumber: 0,
     choices: ["button1", "button2", "button3", "button4"], // possible choices
+    turnInProgress: false,
+    lastButton: "",
 }
 
 function newGame() {
     game.score = 0;
     game.turnNumber = 0;
+    game.currentGame = [];
+    game.playerMoves = [];
+
     // loop through each cirlce
     for (let circle of document.getElementsByClassName("circle")) {
         // if data-listener for current circle is false
         if (circle.getAttribute("data-listener") !== "true") {
             // add an eventLitener to the current circle onclick
             circle.addEventListener("click", (e) => {
-                // create a move variable and set it to the current id
-                let move = e.target.getAttribute("id");
-                // call lightsOn function on this 'turn'
-                lightsOn(move);
-                // push this id into the playerMoves array
-                game.playerMoves.push(move);
-                // call the playerTurn function
-                playerTurn();
+                // if the computer has moved
+                if (game.currentGame.length > 0 && !game.turnInProgress) {
+                    // create a move variable and set it to the current id
+                    let move = e.target.getAttribute("id");
+                    game.lastButton = move;
+                    // call lightsOn function on this 'turn'
+                    lightsOn(move);
+                    // push this id into the playerMoves array
+                    game.playerMoves.push(move);
+                    // call the playerTurn function
+                    playerTurn();
+                }
             });
             // change circle data-listener attribute to true
             circle.setAttribute("data-listener", "true");
@@ -57,6 +66,7 @@ function lightsOn(circ) {
 }
 
 function showTurns() {
+    game.turnInProgress = true;
     // set the first turn to the 0 index of the currentGame array
     game.turnNumber = 0;
     // setInterval() repeatedly calls a function or executes a code snippet, with a fixed time delay between each call
@@ -67,9 +77,30 @@ function showTurns() {
         game.turnNumber++;
         // at the end of the array, stop function call
         if(game.turnNumber >= game.currentGame.length) {
-            clearInterval(turns)
+            clearInterval(turns);
+            game.turnInProgress = false;
         }
     }, 800);
 }
 
-module.exports = { game, newGame, showScore, addTurn, lightsOn, showTurns };
+function playerTurn() {
+    // set an index variable equal to the player moves array
+    let i = game.playerMoves.length -1;
+    // if the currentGame array mactches the playerMove array at each index
+    if(game.currentGame[i] === game.playerMoves[i]) {
+        // and if the lengths of each array are the same
+        if(game.currentGame.length == game.playerMoves.length) {
+            // iterate the score
+            game.score++;
+            // display the score
+            showScore();
+            // add a turn to the currentGame
+            addTurn();
+        }
+    } else {
+        alert("Wrong Move!");
+        newGame();
+    }
+}
+
+module.exports = { game, newGame, showScore, addTurn, lightsOn, showTurns, playerTurn };
